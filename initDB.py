@@ -2,21 +2,32 @@ __author__ = 'Trevor'
 
 import sqlite3
 import feedparser
+from kivy.app import App
+from kivy.uix.label import Label
+from kivy.uix.gridlayout import GridLayout
+from kivy.uix.scrollview import ScrollView
+from ReadRss import DatabaseOperations
 
-conn = sqlite3.connect('database.db')
+class Widgets(GridLayout):
+    def __init__(self):
+        print "Hi"
+    def testmethod(self):
+        layout = GridLayout(cols=1, spacing=10, size_hint_y=None)
+        #Make sure the height is such that there is something to scroll.
+        layout.bind(minimum_height=layout.setter('height'))
+        x = DatabaseOperations()
+        for i in x.getAll():
+            btn = Label(text=i.encode('utf-8'), size_hint_y=None, size=(self.width, self.height),
+                        text_size=(self.width+50, self.height+50), valign='middle', halign='right')
+            layout.add_widget(btn)
+        root = ScrollView(size_hint=(None, None), size=(400, 400), pos_hint={'center_x':.5, 'center_y':.5})
+        root.add_widget(layout)
+        return root
 
-c = conn.cursor()
-# c.execute('''CREATE TABLE feeds (name text, url text)''')
-# c.execute("INSERT INTO feeds VALUES('reddit', 'http://www.reddit.com/r/python/.rss')")
-conn.commit()
+class Kivyexample(App):
+    def build(self):
+        t = Widgets()
+        return t.testmethod()
 
-t = ('reddit', )
-ret = c.execute("SELECT url FROM feeds WHERE name=?", t)
-queryReturn = c.fetchone()
-if queryReturn:
-    queryString = "%s %s" % (queryReturn[0], "")
-print queryString
-d = feedparser.parse(str(queryString))
-print d['feed']['title']
-c.close()
-conn.close()
+if __name__ == "__main__":
+    Kivyexample().run()
